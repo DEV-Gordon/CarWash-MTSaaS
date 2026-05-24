@@ -33,7 +33,9 @@ INSTALLED_APPS = [
     'apps.accounts',
     'apps.wash',
 
-]
+] 
+
+AUTH_USER_MODEL = 'accounts.BusinessUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
