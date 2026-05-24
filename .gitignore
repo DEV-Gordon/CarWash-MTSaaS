@@ -1,18 +1,20 @@
-backend/carwash/__pycache__/settings.cpython-313.pyc
-backend/carwash/__pycache__/__init__.cpython-313.pyc
-backend/apps/__pycache__/__init__.cpython-313.pyc
-backend/apps/accounts/__pycache__/__init__.cpython-313.pyc
-backend/apps/accounts/__pycache__/apps.cpython-313.pyc
-backend/carwash/__pycache__/urls.cpython-313.pyc
-backend/apps/wash/__pycache__/views.cpython-313.pyc
-backend/apps/wash/__pycache__/urls.cpython-313.pyc
-backend/apps/wash/__pycache__/serializers.cpython-313.pyc
-backend/apps/wash/__pycache__/models.cpython-313.pyc
-backend/apps/wash/__pycache__/apps.cpython-313.pyc
-backend/apps/wash/__pycache__/__init__.cpython-313.pyc
-backend/apps/accounts/__pycache__/views.cpython-313.pyc
-backend/apps/accounts/__pycache__/urls.cpython-313.pyc
-backend/apps/accounts/__pycache__/serializers.cpython-313.pyc
-backend/apps/accounts/__pycache__/models.cpython-313.pyc
-backend/db.sqlite3
-/backend/carwash/__pycache__
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# IDEs
+.vscode/
+.idea/
