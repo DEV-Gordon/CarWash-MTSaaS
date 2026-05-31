@@ -1,6 +1,10 @@
 # 🚗 CarWash — Fullstack
 
-**Django REST API + Angular 21 + SQLite + Monthly Subscription**
+**Django REST API + Angular 21 (zoneless + signals) + SQLite + Monthly Subscription**
+
+Multi-tenant car wash management: clients, vehicles, employees, services and
+appointments per business, with JWT auth, role-based access (admin / employee),
+a monthly subscription gate, and printable invoices generated from the browser.
 
 ---
 
@@ -24,32 +28,44 @@ carwash/
 │   │       ├── serializers.py
 │   │       ├── views.py
 │   │       └── urls.py
+│   ├── apps/accounts/permissions.py    ← IsAdmin (admin-only endpoints)
 │   ├── manage.py
 │   └── requirements.txt
 │
-└── frontend/                 ← Angular 21 (standalone + signals)
-    └── src/app/
-        ├── core/
-        │   ├── auth/
-        │   │   ├── auth.service.ts      ← Signals: user, business, subscriptionStatus
-        │   │   └── auth.guard.ts        ← authGuard · subscriptionGuard · guestGuard
-        │   ├── interceptors/
-        │   │   └── jwt.interceptor.ts   ← Attaches Bearer token; handles 401/402
-        │   └── models/index.ts          ← TypeScript interfaces
-        ├── features/
-        │   ├── auth/login/              ← Login screen
-        │   ├── auth/register/           ← Business registration (14-day trial)
-        │   ├── dashboard/               ← Business stats
-        │   ├── clients/                 ← Client CRUD
-        │   ├── vehicles/                ← Vehicle CRUD
-        │   ├── employees/               ← Employee CRUD
-        │   ├── services/                ← Service CRUD
-        │   ├── appointments/            ← Appointment CRUD + status updates
-        │   └── subscription/            ← View status · Renew
-        ├── shared/components/shell/     ← Layout with sidebar + subscription banner
-        ├── app.config.ts
-        └── app.routes.ts
+└── frontend/                 ← Angular 21 (standalone + signals, zoneless)
+    └── src/
+        ├── environments/
+        │   ├── environment.ts            ← apiUrl (production)
+        │   └── environment.development.ts ← apiUrl (ng serve)
+        └── app/
+            ├── core/
+            │   ├── auth/
+            │   │   ├── auth.service.ts      ← Signals: user, business, subscriptionStatus, isAdmin
+            │   │   │                           (session persisted in localStorage, survives reload)
+            │   │   └── auth.guard.ts        ← authGuard · subscriptionGuard · guestGuard · adminGuard
+            │   ├── interceptors/
+            │   │   └── jwt.interceptor.ts   ← Attaches Bearer token; handles 401/402
+            │   ├── services/api.service.ts  ← Generic typed CRUD client
+            │   └── models/index.ts          ← TypeScript interfaces
+            ├── features/
+            │   ├── auth/login/              ← Login screen
+            │   ├── auth/register/           ← Business registration (14-day trial)
+            │   ├── dashboard/               ← Business stats
+            │   ├── clients/                 ← Client CRUD
+            │   ├── vehicles/                ← Vehicle CRUD
+            │   ├── employees/               ← Employee profiles CRUD (admin)
+            │   ├── users/                   ← Team accounts (login users) CRUD (admin)
+            │   ├── services/                ← Service CRUD
+            │   ├── appointments/            ← Appointment CRUD + status + printable invoice
+            │   └── subscription/            ← View status · Renew (admin)
+            ├── shared/components/shell/     ← Layout with role-filtered sidebar + banner
+            ├── app.config.ts                ← provideZonelessChangeDetection
+            └── app.routes.ts
 ```
+
+> **Employees vs Team:** `employees/` manages **HR profiles** (assignable to
+> appointments, no login). `users/` manages **login accounts** (`BusinessUser`)
+> that can sign in to the panel. They are intentionally separate.
 
 ---
 
@@ -83,6 +99,49 @@ Register → 14-day Trial
 
 ---
 
+## Roles & Permissions
+
+Each login account (`BusinessUser`) has a role. Access control is enforced on
+**both** the API (real protection) and the UI (navigation + guards).
+
+| Role | Access |
+|------|--------|
+| `admin` / `superadmin` | Full access, including team, employees and subscription |
+| `employee` | Dashboard, appointments, clients, vehicles, services |
+
+**Admin-only modules:** Employees, Team (users) and Subscription.
+
+```
+Backend  → IsAdmin permission on the sensitive views (returns HTTP 403)
+Frontend → adminGuard on /employees, /users, /subscription (redirects to /dashboard)
+         → sidebar hides admin-only items for employees
+```
+
+The role is persisted client-side, so `adminGuard` and the menu stay correct
+after a full page reload.
+
+### Creating a login account for an employee
+The owner (admin) goes to **Team → New user**, sets a username, role and an
+**initial password**. The new user can then sign in at `/login` immediately
+with those credentials (the password is hashed via `set_password`). Usernames
+accept spaces and accents (e.g. `Juan Perez`).
+
+---
+
+## Invoicing (browser print)
+
+Each appointment can produce a **printable invoice** straight from the browser —
+no backend call, all data already lives on the appointment.
+
+- In **Appointments**, the **Invoice** button opens a formatted receipt:
+  business name, invoice number (`FAC-000123`), issue date, client, vehicle,
+  attending employee, itemized services with prices, **total**, and notes.
+- **Print** triggers `window.print()` → send to a printer or **Save as PDF**.
+- `@media print` rules in `src/styles.css` hide the app chrome (sidebar, tables,
+  buttons) so only the invoice is printed.
+
+---
+
 ## Installation
 
 ### Backend
@@ -99,37 +158,45 @@ python manage.py runserver
 ```bash
 cd frontend
 npm install
-ng serve
+ng serve            # or: npm start
 ```
 
 Open: http://localhost:4200
+
+The API base URL is configured in `src/environments/`. `ng serve` uses
+`environment.development.ts`; production builds use `environment.ts`. Adjust
+`apiUrl` if the backend runs on a different host/port (default
+`http://localhost:8000/api`).
 
 ---
 
 ## Main Endpoints
 
 ### Auth (`/api/auth/`)
-| Method | Route | Description |
-|--------|-------|-------------|
-| POST | `/auth/login/` | Login → JWT + business info |
-| POST | `/auth/register/` | Business + admin registration |
-| POST | `/auth/refresh/` | Refresh access token |
-| GET | `/auth/me/` | Current user + subscription |
-| GET/PUT | `/auth/business/` | Business details |
-| GET/PUT | `/auth/subscription/` | Subscription details |
-| POST | `/auth/subscription/renew/` | Renew for 1 month |
+| Method | Route | Description | Access |
+|--------|-------|-------------|--------|
+| POST | `/auth/login/` | Login → JWT + business info | Public |
+| POST | `/auth/register/` | Business + admin registration | Public |
+| POST | `/auth/refresh/` | Refresh access token | Public |
+| GET | `/auth/me/` | Current user + subscription | Auth |
+| GET/PUT | `/auth/business/` | Business details | Auth |
+| GET/POST | `/auth/users/` | List / create team login accounts | **Admin** |
+| GET/PUT | `/auth/subscription/` | Subscription details | **Admin** |
+| POST | `/auth/subscription/renew/` | Renew for 1 month | **Admin** |
 
 ### API (`/api/`)
-| Resource | Route |
-|----------|-------|
-| Dashboard | `GET /api/dashboard/` |
-| Clients | `/api/clients/` |
-| Vehicles | `/api/vehicles/` |
-| Employees | `/api/employees/` |
-| Services | `/api/services/` |
-| Appointments | `/api/appointments/` |
+| Resource | Route | Access |
+|----------|-------|--------|
+| Dashboard | `GET /api/dashboard/` | Auth |
+| Clients | `/api/clients/` | Auth |
+| Vehicles | `/api/vehicles/` | Auth |
+| Employees | `/api/employees/` | **Admin** |
+| Services | `/api/services/` | Auth |
+| Appointments | `/api/appointments/` | Auth |
 
-All endpoints automatically filter by the **authenticated user's business** (secure multi-tenant).
+All endpoints automatically filter by the **authenticated user's business**
+(secure multi-tenant). Endpoints marked **Admin** require an `admin`/`superadmin`
+role (`IsAdmin` permission); employees receive HTTP 403.
 
 ---
 
@@ -141,9 +208,12 @@ CORS_ALLOWED_ORIGINS=http://localhost:4200
 ```
 
 ## Suggested Next Steps
+- [x] Role-based access control (admin / employee) on API + UI
+- [x] Printable per-appointment invoices (browser print / Save as PDF)
+- [ ] Add business address / phone / tax ID to the invoice header
 - [ ] Integrate payment gateway (Stripe / Conekta) for real subscriptions
 - [ ] WhatsApp/email notifications on subscription expiration
-- [ ] PDF reports for appointments and revenue
+- [ ] PDF reports for revenue (monthly summaries)
 - [ ] Business logo upload
 - [ ] Migrate from SQLite to PostgreSQL in production
 - [ ] Deploy with Docker Compose (Django + Angular + Nginx)
