@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import BusinessUser, Business, Subscription
+from .permissions import IsAdmin
 from .serializers import (
     RegisterBusinessSerializer, CarWashTokenSerializer,
     BusinessSerializer, SubscriptionSerializer, BusinessUserSerializer,
@@ -60,14 +61,14 @@ class MeView(APIView):
 class SubscriptionDetailView(generics.RetrieveUpdateAPIView):
     # Get or update the subscription for the authenticated business.
     serializer_class = SubscriptionSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdmin]
 
     def get_object(self):
         return self.request.user.business.subscription
 
 class RenewSubscriptionView(APIView):
     # Manually renew/activate the subscription for one month.
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdmin]
 
     def post(self, request):
         user = request.user
@@ -93,7 +94,7 @@ class BusinessDetailView(generics.RetrieveUpdateAPIView):
 class UserListView(generics.ListCreateAPIView):
     # Admin can list and create users within the same business.
     serializer_class = BusinessUserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdmin]
 
     def get_queryset(self):
         return BusinessUser.objects.filter(business=self.request.user.business)

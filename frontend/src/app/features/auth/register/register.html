@@ -1,0 +1,88 @@
+<div class="auth">
+  <aside class="auth-aside">
+    <div class="aside-brand">
+      <span class="mark">
+        <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+          <path d="M7 19c0-4 3-9 9-9s9 5 9 9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="11" cy="22" r="2.3" fill="currentColor"/>
+          <circle cx="21" cy="22" r="2.3" fill="currentColor"/>
+        </svg>
+      </span>
+      <strong>CarWash</strong>
+    </div>
+    <div class="aside-copy">
+      <h2>Empieza con 14 días gratis.</h2>
+      <p>Crea la cuenta de tu negocio en menos de un minuto. Sin tarjeta, sin compromiso.</p>
+    </div>
+    <div class="aside-tags">
+      <span>Prueba de 14 días</span>
+      <span>Configuración instantánea</span>
+    </div>
+  </aside>
+
+  <div class="auth-main">
+    <div class="auth-box">
+      <h1>Registra tu negocio</h1>
+      <p class="sub">Tú serás el administrador de la cuenta.</p>
+
+      @if (error()) { <div class="alert alert-error">{{ error() }}</div> }
+
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="field">
+          <label for="bn">Nombre del negocio</label>
+          <input id="bn" class="input" type="text" formControlName="business_name" placeholder="Lavadero El Brillo">
+          @if (form.controls.business_name.touched && form.controls.business_name.invalid) { <div class="field-error">Requerido.</div> }
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="be">Correo del negocio</label>
+            <input id="be" class="input" type="email" formControlName="business_email" placeholder="hola@negocio.com">
+            @if (form.controls.business_email.touched && form.controls.business_email.invalid) { <div class="field-error">Correo inválido.</div> }
+          </div>
+          <div class="field">
+            <label for="on">Nombre del propietario</label>
+            <input id="on" class="input" type="text" formControlName="owner_name" placeholder="Carlos Pérez">
+            @if (form.controls.owner_name.touched && form.controls.owner_name.invalid) { <div class="field-error">Requerido.</div> }
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="ph">Teléfono <span class="muted">(opcional)</span></label>
+            <input id="ph" class="input" type="tel" formControlName="phone" placeholder="300 000 0000">
+          </div>
+          <div class="field">
+            <label for="us">Usuario</label>
+            <input id="us" class="input" type="text" formControlName="username" autocomplete="username" placeholder="admin">
+            @if (form.controls.username.touched && form.controls.username.invalid) { <div class="field-error">Requerido.</div> }
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="ad">Dirección <span class="muted">(opcional)</span></label>
+          <input id="ad" class="input" type="text" formControlName="address" placeholder="Calle 1 # 2-3">
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="pw">Contraseña</label>
+            <input id="pw" class="input" type="password" formControlName="password" autocomplete="new-password" placeholder="Mín. 8 caracteres">
+            @if (form.controls.password.touched && form.controls.password.invalid) { <div class="field-error">Mínimo 8 caracteres.</div> }
+          </div>
+          <div class="field">
+            <label for="pw2">Repetir contraseña</label>
+            <input id="pw2" class="input" type="password" formControlName="password2" autocomplete="new-password" placeholder="••••••••">
+            @if (form.controls.password2.touched && form.errors?.['mismatch']) { <div class="field-error">No coinciden.</div> }
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-block" type="submit" [disabled]="loading()">
+          {{ loading() ? 'Creando cuenta…' : 'Crear cuenta y empezar' }}
+        </button>
+      </form>
+
+      <p class="switch">¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+    </div>
+  </div>
+</div>

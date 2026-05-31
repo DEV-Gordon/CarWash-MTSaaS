@@ -1,0 +1,77 @@
+<div class="page-head">
+  <div>
+    <h1>Servicios</h1>
+    <p>Los tipos de lavado que ofreces y sus precios.</p>
+  </div>
+  <button class="btn btn-primary" (click)="openCreate()">+ Nuevo servicio</button>
+</div>
+
+@if (loading()) {
+  <div class="card card-pad loading">Cargando servicios…</div>
+} @else if (items().length === 0) {
+  <div class="card card-pad empty"><strong>Sin servicios</strong>Crea tu catálogo de lavados.</div>
+} @else {
+  <div class="svc-grid">
+    @for (s of items(); track s.id) {
+      <div class="card svc-card">
+        <div class="svc-top">
+          <h3>{{ s.name }}</h3>
+          <span class="badge" [class.badge-active]="s.is_active" [class.badge-suspended]="!s.is_active">{{ s.is_active ? 'Activo' : 'Inactivo' }}</span>
+        </div>
+        @if (s.description) { <p class="muted svc-desc">{{ s.description }}</p> }
+        <div class="svc-meta">
+          <span class="svc-price">{{ money(s.price) }}</span>
+          <span class="muted">· {{ s.duration_minutes }} min</span>
+        </div>
+        <div class="svc-actions">
+          <button class="btn btn-ghost btn-sm" (click)="openEdit(s)">Editar</button>
+          <button class="btn btn-danger btn-sm" (click)="remove(s)">Eliminar</button>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+@if (modalOpen()) {
+  <div class="modal-backdrop" (click)="close()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3>{{ editing() ? 'Editar servicio' : 'Nuevo servicio' }}</h3>
+        <button class="modal-close" (click)="close()">×</button>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="modal-body">
+          @if (error()) { <div class="alert alert-error">{{ error() }}</div> }
+          <div class="field">
+            <label>Nombre</label>
+            <input class="input" formControlName="name" placeholder="Lavado premium">
+            @if (form.controls.name.touched && form.controls.name.invalid) { <div class="field-error">Requerido.</div> }
+          </div>
+          <div class="field">
+            <label>Descripción <span class="muted">(opcional)</span></label>
+            <textarea class="textarea" formControlName="description"></textarea>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Precio</label>
+              <input class="input" type="number" step="0.01" formControlName="price" placeholder="0.00">
+              @if (form.controls.price.touched && form.controls.price.invalid) { <div class="field-error">Precio inválido.</div> }
+            </div>
+            <div class="field">
+              <label>Duración (min)</label>
+              <input class="input" type="number" formControlName="duration_minutes">
+              @if (form.controls.duration_minutes.touched && form.controls.duration_minutes.invalid) { <div class="field-error">Inválido.</div> }
+            </div>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-soft);cursor:pointer">
+            <input type="checkbox" formControlName="is_active"> Servicio disponible
+          </label>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-ghost" (click)="close()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Guardar' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

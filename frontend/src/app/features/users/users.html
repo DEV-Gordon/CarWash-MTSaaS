@@ -1,0 +1,99 @@
+<div class="page-head">
+  <div>
+    <h1>Equipo</h1>
+    <p>Usuarios con acceso al panel de tu negocio.</p>
+  </div>
+  @if (isAdmin()) {
+    <button class="btn btn-primary" (click)="openCreate()">+ Nuevo usuario</button>
+  }
+</div>
+
+@if (loading()) {
+  <div class="card card-pad loading">Cargando usuarios…</div>
+} @else if (items().length === 0) {
+  <div class="card card-pad empty"><strong>Sin usuarios</strong>Aún no hay usuarios en este negocio.</div>
+} @else {
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>Usuario</th><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Rol</th></tr>
+      </thead>
+      <tbody>
+        @for (u of items(); track u.id) {
+          <tr>
+            <td>
+              <strong>{{ u.username }}</strong>
+              @if (u.id === currentId) { <span class="badge badge-active" style="margin-left:8px">Tú</span> }
+            </td>
+            <td>{{ (u.first_name || '') + ' ' + (u.last_name || '') | titlecase }}</td>
+            <td class="muted">{{ u.email || '—' }}</td>
+            <td class="mono muted">{{ u.phone || '—' }}</td>
+            <td><span class="badge" [class.badge-trial]="u.role === 'employee'" [class.badge-active]="u.role === 'admin' || u.role === 'superadmin'">{{ roleLabel(u.role) }}</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (modalOpen()) {
+  <div class="modal-backdrop" (click)="close()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3>Nuevo usuario</h3>
+        <button class="modal-close" (click)="close()">×</button>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="modal-body">
+          @if (error()) { <div class="alert alert-error">{{ error() }}</div> }
+          <div class="field">
+            <label>Usuario</label>
+            <input class="input" formControlName="username" autocomplete="off">
+            @if (form.controls.username.touched && form.controls.username.invalid) { <div class="field-error">Requerido.</div> }
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Nombre <span class="muted">(opcional)</span></label>
+              <input class="input" formControlName="first_name">
+            </div>
+            <div class="field">
+              <label>Apellido <span class="muted">(opcional)</span></label>
+              <input class="input" formControlName="last_name">
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Correo <span class="muted">(opcional)</span></label>
+              <input class="input" type="email" formControlName="email">
+              @if (form.controls.email.touched && form.controls.email.invalid) { <div class="field-error">Correo inválido.</div> }
+            </div>
+            <div class="field">
+              <label>Teléfono <span class="muted">(opcional)</span></label>
+              <input class="input" formControlName="phone">
+            </div>
+          </div>
+          <div class="field">
+            <label>Rol</label>
+            <select class="select" formControlName="role">
+              @for (r of roles; track r.value) { <option [value]="r.value">{{ r.label }}</option> }
+            </select>
+          </div>
+          <div class="field">
+            <label>Contraseña inicial</label>
+            <input class="input" type="password" formControlName="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
+            @if (form.controls.password.touched && form.controls.password.invalid) {
+              <div class="field-error">La contraseña es obligatoria (mínimo 8 caracteres).</div>
+            }
+          </div>
+          <p class="muted" style="font-size:12.5px;line-height:1.45">
+            El usuario podrá iniciar sesión de inmediato con su nombre de usuario y esta contraseña.
+          </p>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-ghost" (click)="close()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ saving() ? 'Creando…' : 'Crear usuario' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

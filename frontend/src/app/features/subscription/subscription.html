@@ -1,0 +1,53 @@
+<div class="page-head">
+  <div>
+    <h1>Suscripción</h1>
+    <p>Estado de tu plan y renovación.</p>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="card card-pad loading">Cargando suscripción…</div>
+} @else if (subscription(); as sub) {
+  @if (message()) { <div class="alert alert-ok">{{ message() }}</div> }
+  @if (error()) { <div class="alert alert-error">{{ error() }}</div> }
+
+  <div class="sub-layout">
+    <div class="card plan-card" [attr.data-status]="sub.status">
+      <div class="plan-top">
+        <span class="plan-name">Plan {{ sub.plan === 'monthly' ? 'Mensual' : sub.plan }}</span>
+        <span class="badge badge-{{ sub.status === 'trial' ? 'trial' : sub.status }}">{{ statusLabel() }}</span>
+      </div>
+      <div class="plan-price">{{ money(sub.price) }}<small>/mes</small></div>
+
+      <div class="plan-days">
+        @if (sub.status === 'active' || sub.status === 'trial') {
+          <strong>{{ sub.days_remaining }}</strong> día(s) restante(s)
+        } @else {
+          <strong>0</strong> días — requiere renovación
+        }
+      </div>
+
+      <dl class="plan-meta">
+        <div><dt>Inicio</dt><dd>{{ sub.start_date }}</dd></div>
+        <div><dt>Vencimiento</dt><dd>{{ sub.end_date }}</dd></div>
+        <div><dt>Renovación automática</dt><dd>{{ sub.auto_renew ? 'Sí' : 'No' }}</dd></div>
+      </dl>
+    </div>
+
+    <div class="card card-pad renew-card">
+      <h3>Renovar suscripción</h3>
+      <p class="muted">Extiende tu plan un mes más a partir de la fecha de vencimiento actual.</p>
+
+      @if (isAdmin()) {
+        <button class="btn btn-primary btn-block" (click)="renew()" [disabled]="renewing()">
+          {{ renewing() ? 'Procesando…' : 'Renovar por 1 mes — ' + money(sub.price) }}
+        </button>
+        <p class="hint muted">El cobro real se integrará con la pasarela de pago próximamente.</p>
+      } @else {
+        <div class="alert alert-error">Solo los administradores pueden renovar la suscripción.</div>
+      }
+    </div>
+  </div>
+} @else {
+  <div class="card card-pad empty"><strong>Sin suscripción</strong>No se encontró información de suscripción.</div>
+}

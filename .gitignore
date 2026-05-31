@@ -6,7 +6,7 @@ __pycache__/
 *.env
 
 # Django
-db.sqlite3
+
 media/
 staticfiles/
 
@@ -18,3 +18,4 @@ env/
 # IDEs
 .vscode/
 .idea/
+backend/db.sqlite3

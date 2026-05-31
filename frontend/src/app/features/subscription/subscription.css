@@ -1,0 +1,37 @@
+:host { display: block; }
+
+.sub-layout { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; align-items: start; }
+
+.plan-card {
+  padding: 26px;
+  background: linear-gradient(155deg, var(--ink), var(--ink-soft));
+  color: #eaf2f4;
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+.plan-card::after {
+  content: ''; position: absolute; right: -60px; bottom: -60px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(52,208,196,.3), transparent 70%);
+}
+.plan-card[data-status="expired"]::after,
+.plan-card[data-status="suspended"]::after { background: radial-gradient(circle, rgba(229,72,77,.3), transparent 70%); }
+
+.plan-top { display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }
+.plan-name { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+.plan-price { font-family: var(--font-display); font-size: 44px; margin: 16px 0 4px; color: #fff; position: relative; z-index: 1; }
+.plan-price small { font-size: 16px; color: #9fb6bf; font-family: var(--font-body); font-weight: 500; }
+.plan-days { color: var(--aqua-glow); font-size: 14px; margin-bottom: 22px; position: relative; z-index: 1; }
+.plan-days strong { font-size: 18px; }
+
+.plan-meta { display: flex; flex-direction: column; gap: 12px; position: relative; z-index: 1; border-top: 1px solid rgba(255,255,255,.1); padding-top: 18px; }
+.plan-meta > div { display: flex; justify-content: space-between; }
+.plan-meta dt { color: #8ba3ac; font-size: 13.5px; }
+.plan-meta dd { color: #eaf2f4; font-size: 13.5px; font-weight: 600; }
+
+.renew-card h3 { font-size: 18px; margin-bottom: 6px; }
+.renew-card p { margin-bottom: 18px; font-size: 14px; }
+.hint { margin-top: 12px; font-size: 12.5px; text-align: center; }
+
+@media (max-width: 760px) { .sub-layout { grid-template-columns: 1fr; } }

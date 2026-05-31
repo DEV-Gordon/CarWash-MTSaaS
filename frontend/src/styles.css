@@ -1,0 +1,222 @@
+/* ============================================================
+   CarWash — Sistema de estilos propio (sin frameworks CSS)
+   ============================================================ */
+
+:root {
+  /* Paleta */
+  --ink:        #0c1f2b;   /* azul casi negro (sidebar / texto) */
+  --ink-soft:   #12303f;
+  --aqua:       #1fb6a6;   /* acento principal (agua/brillo) */
+  --aqua-deep:  #138577;
+  --aqua-glow:  #34d0c4;
+  --amber:      #f5a623;   /* avisos / trial */
+  --red:        #e5484d;
+  --green:      #2fa84f;
+
+  --bg:         #eef2f4;   /* fondo de la app */
+  --surface:    #ffffff;
+  --surface-2:  #f6f9fa;
+  --line:       #e2e8eb;
+  --line-soft:  #eef2f4;
+
+  --text:       #16252e;
+  --text-soft:  #5b6b74;
+  --text-faint: #93a2aa;
+
+  /* Tipografía */
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body:    'Manrope', system-ui, sans-serif;
+
+  /* Forma */
+  --radius:    14px;
+  --radius-sm: 10px;
+  --radius-lg: 20px;
+
+  /* Sombra */
+  --shadow-sm: 0 1px 2px rgba(12, 31, 43, .06), 0 1px 3px rgba(12, 31, 43, .04);
+  --shadow-md: 0 4px 14px rgba(12, 31, 43, .08);
+  --shadow-lg: 0 18px 40px rgba(12, 31, 43, .14);
+
+  --sidebar-w: 256px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spacing: -.01em; color: var(--ink); line-height: 1.15; }
+a { color: inherit; text-decoration: none; }
+
+/* ---------- Botones ---------- */
+.btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform .12s ease, box-shadow .2s ease, background .2s ease;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+
+.btn-primary { background: var(--aqua); color: #fff; box-shadow: 0 4px 12px rgba(31, 182, 166, .3); }
+.btn-primary:hover:not(:disabled) { background: var(--aqua-deep); }
+
+.btn-ghost { background: transparent; color: var(--text-soft); border: 1px solid var(--line); }
+.btn-ghost:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
+
+.btn-danger { background: transparent; color: var(--red); border: 1px solid #f3c9ca; }
+.btn-danger:hover:not(:disabled) { background: #fdeced; }
+
+.btn-block { width: 100%; justify-content: center; }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+
+/* ---------- Formularios ---------- */
+.field { margin-bottom: 16px; }
+.field label {
+  display: block; font-size: 13px; font-weight: 600;
+  color: var(--text-soft); margin-bottom: 6px;
+}
+.input, .select, .textarea {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 11px 13px;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.input:focus, .select:focus, .textarea:focus {
+  outline: none;
+  border-color: var(--aqua);
+  box-shadow: 0 0 0 3px rgba(31, 182, 166, .15);
+}
+.textarea { resize: vertical; min-height: 84px; }
+.field-error { color: var(--red); font-size: 12.5px; margin-top: 5px; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+@media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+
+/* ---------- Tarjetas ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.card-pad { padding: 22px; }
+
+/* ---------- Tablas ---------- */
+.table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); }
+table.data { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.data thead th {
+  text-align: left;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-faint);
+  padding: 13px 18px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+table.data tbody td { padding: 14px 18px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+table.data tbody tr:last-child td { border-bottom: none; }
+table.data tbody tr:hover { background: var(--surface-2); }
+.cell-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ---------- Badges ---------- */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600;
+  padding: 4px 10px; border-radius: 999px;
+}
+.badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.badge-active    { background: #e5f6ec; color: #1f7a3d; }
+.badge-trial     { background: #fdf1da; color: #a3690a; }
+.badge-expired   { background: #fdeced; color: #c0392b; }
+.badge-suspended { background: #eceff1; color: #607078; }
+.badge-pending     { background: #fdf1da; color: #a3690a; }
+.badge-in_progress { background: #e3f1fb; color: #1d6fa5; }
+.badge-done        { background: #e5f6ec; color: #1f7a3d; }
+.badge-cancelled   { background: #fdeced; color: #c0392b; }
+
+/* ---------- Cabecera de página ---------- */
+.page-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+}
+.page-head h1 { font-size: 27px; }
+.page-head p { color: var(--text-soft); margin-top: 4px; font-size: 14px; }
+
+/* ---------- Estados utilitarios ---------- */
+.empty {
+  text-align: center; padding: 56px 20px; color: var(--text-faint);
+}
+.empty strong { display: block; color: var(--text-soft); font-size: 16px; margin-bottom: 4px; }
+.loading { padding: 40px; text-align: center; color: var(--text-faint); }
+.alert {
+  border-radius: var(--radius-sm); padding: 12px 15px; font-size: 14px; margin-bottom: 16px;
+}
+.alert-error { background: #fdeced; color: #b3322d; border: 1px solid #f3c9ca; }
+.alert-ok    { background: #e5f6ec; color: #1f7a3d; border: 1px solid #bfe6cd; }
+
+/* ---------- Modal ---------- */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(12, 31, 43, .45);
+  backdrop-filter: blur(3px);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 48px 18px; z-index: 60; overflow-y: auto;
+  animation: fade .15s ease;
+}
+.modal {
+  background: var(--surface); border-radius: var(--radius-lg);
+  width: 100%; max-width: 520px; box-shadow: var(--shadow-lg);
+  animation: pop .2s cubic-bezier(.2,.9,.3,1.2);
+}
+.modal-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 24px 6px; }
+.modal-head h3 { font-size: 20px; }
+.modal-body { padding: 12px 24px 8px; }
+.modal-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px 22px; }
+.modal-close { background: none; border: none; cursor: pointer; color: var(--text-faint); font-size: 22px; line-height: 1; }
+
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+
+/* ---------- Misc ---------- */
+.muted { color: var(--text-soft); }
+.mono  { font-variant-numeric: tabular-nums; }
+.right { text-align: right; }
+.search-box {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); padding: 0 12px; max-width: 320px; width: 100%;
+}
+.search-box input { border: none; outline: none; padding: 10px 0; flex: 1; font-family: var(--font-body); font-size: 14px; background: transparent; }
+
+/* ---------- Impresión ---------- */
+/* Al imprimir, oculta todo y deja solo el área marcada con .print-area (la factura). */
+@media print {
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 0; }
+  .no-print { display: none !important; }
+}

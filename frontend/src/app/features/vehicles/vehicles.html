@@ -1,0 +1,108 @@
+<div class="page-head">
+  <div>
+    <h1>Vehículos</h1>
+    <p>Vehículos asociados a tus clientes.</p>
+  </div>
+  <button class="btn btn-primary" (click)="openCreate()" [disabled]="clients().length === 0">+ Nuevo vehículo</button>
+</div>
+
+@if (clients().length === 0 && !loading()) {
+  <div class="alert alert-error">Primero debes registrar al menos un cliente.</div>
+}
+
+<div style="margin-bottom:18px">
+  <div class="search-box">
+    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--text-faint)" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+    <input type="text" placeholder="Buscar por placa, marca o cliente…" [value]="search()" (input)="onSearch($any($event.target).value)">
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="card card-pad loading">Cargando vehículos…</div>
+} @else if (items().length === 0) {
+  <div class="card card-pad empty"><strong>Sin vehículos</strong>Registra el primer vehículo de un cliente.</div>
+} @else {
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>Placa</th><th>Vehículo</th><th>Año</th><th>Color</th><th>Cliente</th><th></th></tr>
+      </thead>
+      <tbody>
+        @for (v of items(); track v.id) {
+          <tr>
+            <td><strong class="mono">{{ v.plate }}</strong></td>
+            <td>{{ v.brand }} {{ v.model }}</td>
+            <td class="muted">{{ v.year || '—' }}</td>
+            <td class="muted">{{ v.color || '—' }}</td>
+            <td>{{ clientName(v.client) }}</td>
+            <td>
+              <div class="cell-actions">
+                <button class="btn btn-ghost btn-sm" (click)="openEdit(v)">Editar</button>
+                <button class="btn btn-danger btn-sm" (click)="remove(v)">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (modalOpen()) {
+  <div class="modal-backdrop" (click)="close()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3>{{ editing() ? 'Editar vehículo' : 'Nuevo vehículo' }}</h3>
+        <button class="modal-close" (click)="close()">×</button>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="modal-body">
+          @if (error()) { <div class="alert alert-error">{{ error() }}</div> }
+          <div class="field">
+            <label>Cliente</label>
+            <select class="select" formControlName="client">
+              <option [ngValue]="null" disabled>Selecciona un cliente</option>
+              @for (c of clients(); track c.id) { <option [ngValue]="c.id">{{ c.full_name }}</option> }
+            </select>
+            @if (form.controls.client.touched && form.controls.client.invalid) { <div class="field-error">Selecciona un cliente.</div> }
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Marca</label>
+              <input class="input" formControlName="brand">
+              @if (form.controls.brand.touched && form.controls.brand.invalid) { <div class="field-error">Requerido.</div> }
+            </div>
+            <div class="field">
+              <label>Modelo</label>
+              <input class="input" formControlName="model">
+              @if (form.controls.model.touched && form.controls.model.invalid) { <div class="field-error">Requerido.</div> }
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Placa</label>
+              <input class="input" formControlName="plate">
+              @if (form.controls.plate.touched && form.controls.plate.invalid) { <div class="field-error">Requerido.</div> }
+            </div>
+            <div class="field">
+              <label>Año <span class="muted">(opcional)</span></label>
+              <input class="input" type="number" formControlName="year">
+            </div>
+          </div>
+          <div class="field">
+            <label>Color <span class="muted">(opcional)</span></label>
+            <input class="input" formControlName="color">
+          </div>
+          <div class="field">
+            <label>Notas <span class="muted">(opcional)</span></label>
+            <textarea class="textarea" formControlName="notes"></textarea>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-ghost" (click)="close()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Guardar' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

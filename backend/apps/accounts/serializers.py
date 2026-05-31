@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.password_validation import validate_password
 from .models import BusinessUser, Business, Subscription
@@ -35,14 +36,45 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
 class BusinessUserSerializer(serializers.ModelSerializer):
     business_detail = BusinessSerializer(source='business', read_only=True)
+    # Username permisivo: admite espacios y nombres normales (ej. "Juan Perez"),
+    # a diferencia del validador estricto de Django. Mantiene la unicidad.
+    username = serializers.CharField(
+        max_length=150,
+        validators=[UniqueValidator(
+            queryset=BusinessUser.objects.all(),
+            message='El usuario ya existe.',
+        )],
+    )
+    # Contraseña inicial: solo se escribe al crear, nunca se devuelve en las respuestas.
+    password = serializers.CharField(write_only=True, required=False, validators=[validate_password])
 
     class Meta:
         model = BusinessUser
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
-            'phone', 'role', 'business', 'business_detail',
+            'phone', 'role', 'business', 'business_detail', 'password',
         ]
         read_only_fields = ['id']
+
+    def create(self, validated_data):
+        # Usa set_password para hashear la clave; así el usuario puede iniciar sesión de inmediato.
+        password = validated_data.pop('password', None)
+        user = BusinessUser(**validated_data)
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
+        user.save()
+        return user
+
+    def update(self, instance, validated_data):
+        # Permite cambiar la contraseña al editar; si no se envía, se conserva la actual.
+        password = validated_data.pop('password', None)
+        user = super().update(instance, validated_data)
+        if password:
+            user.set_password(password)
+            user.save(update_fields=['password'])
+        return user
 
 
 class RegisterBusinessSerializer(serializers.Serializer):

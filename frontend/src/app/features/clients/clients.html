@@ -1,0 +1,91 @@
+<div class="page-head">
+  <div>
+    <h1>Clientes</h1>
+    <p>Administra los clientes de tu negocio y sus vehículos.</p>
+  </div>
+  <button class="btn btn-primary" (click)="openCreate()">+ Nuevo cliente</button>
+</div>
+
+<div style="margin-bottom:18px">
+  <div class="search-box">
+    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--text-faint)" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+    <input type="text" placeholder="Buscar por nombre, teléfono o correo…" [value]="search()" (input)="onSearch($any($event.target).value)">
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="card card-pad loading">Cargando clientes…</div>
+} @else if (items().length === 0) {
+  <div class="card card-pad empty"><strong>Sin clientes todavía</strong>Crea tu primer cliente para empezar.</div>
+} @else {
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>Nombre</th><th>Teléfono</th><th>Correo</th><th>Vehículos</th><th></th></tr>
+      </thead>
+      <tbody>
+        @for (c of items(); track c.id) {
+          <tr>
+            <td><strong>{{ c.full_name }}</strong></td>
+            <td class="mono">{{ c.phone }}</td>
+            <td class="muted">{{ c.email || '—' }}</td>
+            <td>{{ c.vehicles.length }}</td>
+            <td>
+              <div class="cell-actions">
+                <button class="btn btn-ghost btn-sm" (click)="openEdit(c)">Editar</button>
+                <button class="btn btn-danger btn-sm" (click)="remove(c)">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (modalOpen()) {
+  <div class="modal-backdrop" (click)="close()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3>{{ editing() ? 'Editar cliente' : 'Nuevo cliente' }}</h3>
+        <button class="modal-close" (click)="close()">×</button>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="modal-body">
+          @if (error()) { <div class="alert alert-error">{{ error() }}</div> }
+          <div class="form-grid">
+            <div class="field">
+              <label>Nombre</label>
+              <input class="input" formControlName="first_name">
+              @if (form.controls.first_name.touched && form.controls.first_name.invalid) { <div class="field-error">Requerido.</div> }
+            </div>
+            <div class="field">
+              <label>Apellido</label>
+              <input class="input" formControlName="last_name">
+              @if (form.controls.last_name.touched && form.controls.last_name.invalid) { <div class="field-error">Requerido.</div> }
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Teléfono</label>
+              <input class="input" formControlName="phone">
+              @if (form.controls.phone.touched && form.controls.phone.invalid) { <div class="field-error">Requerido.</div> }
+            </div>
+            <div class="field">
+              <label>Correo <span class="muted">(opcional)</span></label>
+              <input class="input" type="email" formControlName="email">
+            </div>
+          </div>
+          <div class="field">
+            <label>Notas <span class="muted">(opcional)</span></label>
+            <textarea class="textarea" formControlName="notes"></textarea>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-ghost" (click)="close()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Guardar' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

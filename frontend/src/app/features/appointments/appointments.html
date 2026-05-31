@@ -1,0 +1,190 @@
+<div class="page-head">
+  <div>
+    <h1>Citas</h1>
+    <p>Agenda y seguimiento de los lavados.</p>
+  </div>
+  <button class="btn btn-primary" (click)="openCreate()" [disabled]="vehicles().length === 0 || services().length === 0">+ Nueva cita</button>
+</div>
+
+@if ((vehicles().length === 0 || services().length === 0) && !loading()) {
+  <div class="alert alert-error">Necesitas al menos un vehículo y un servicio registrados para crear citas.</div>
+}
+
+<div class="filter-bar">
+  <button class="chip" [class.on]="statusFilter() === ''" (click)="filterBy('')">Todas</button>
+  @for (s of statuses; track s.value) {
+    <button class="chip" [class.on]="statusFilter() === s.value" (click)="filterBy(s.value)">{{ s.label }}</button>
+  }
+</div>
+
+@if (loading()) {
+  <div class="card card-pad loading">Cargando citas…</div>
+} @else if (items().length === 0) {
+  <div class="card card-pad empty"><strong>Sin citas</strong>No hay citas con este filtro.</div>
+} @else {
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr><th>#</th><th>Fecha</th><th>Vehículo</th><th>Cliente</th><th>Empleado</th><th>Servicios</th><th class="right">Total</th><th>Estado</th><th></th></tr>
+      </thead>
+      <tbody>
+        @for (a of items(); track a.id) {
+          <tr>
+            <td class="muted mono">#{{ a.id }}</td>
+            <td>{{ dateTime(a.scheduled_at) }}</td>
+            <td>
+              @if (a.vehicle_detail) { <strong class="mono">{{ a.vehicle_detail.plate }}</strong><br><span class="muted">{{ a.vehicle_detail.brand }} {{ a.vehicle_detail.model }}</span> }
+            </td>
+            <td>{{ a.client_name || '—' }}</td>
+            <td class="muted">{{ a.employee_detail?.full_name || 'Sin asignar' }}</td>
+            <td class="muted">{{ a.services_detail?.length || 0 }} servicio(s)</td>
+            <td class="right mono"><strong>{{ money(a.total_price) }}</strong></td>
+            <td><span class="badge badge-{{ a.status }}">{{ a.status_display }}</span></td>
+            <td>
+              <div class="cell-actions">
+                <select class="status-select" [value]="a.status" (change)="changeStatus(a, $any($event.target).value)">
+                  @for (s of statuses; track s.value) { <option [value]="s.value">{{ s.label }}</option> }
+                </select>
+                <button class="btn btn-ghost btn-sm" (click)="openInvoice(a)">Factura</button>
+                <button class="btn btn-ghost btn-sm" (click)="openEdit(a)">Editar</button>
+                <button class="btn btn-danger btn-sm" (click)="remove(a)">×</button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (modalOpen()) {
+  <div class="modal-backdrop" (click)="close()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3>{{ editing() ? 'Editar cita' : 'Nueva cita' }}</h3>
+        <button class="modal-close" (click)="close()">×</button>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="modal-body">
+          @if (error()) { <div class="alert alert-error">{{ error() }}</div> }
+          <div class="field">
+            <label>Vehículo</label>
+            <select class="select" formControlName="vehicle">
+              <option [ngValue]="null" disabled>Selecciona un vehículo</option>
+              @for (v of vehicles(); track v.id) { <option [ngValue]="v.id">{{ vehicleLabel(v) }}</option> }
+            </select>
+            @if (form.controls.vehicle.touched && form.controls.vehicle.invalid) { <div class="field-error">Requerido.</div> }
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label>Fecha y hora</label>
+              <input class="input" type="datetime-local" formControlName="scheduled_at">
+              @if (form.controls.scheduled_at.touched && form.controls.scheduled_at.invalid) { <div class="field-error">Requerido.</div> }
+            </div>
+            <div class="field">
+              <label>Empleado <span class="muted">(opcional)</span></label>
+              <select class="select" formControlName="employee">
+                <option [ngValue]="null">Sin asignar</option>
+                @for (e of employees(); track e.id) { <option [ngValue]="e.id">{{ e.full_name }}</option> }
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Servicios</label>
+            <div class="svc-picker">
+              @for (s of services(); track s.id) {
+                <button type="button" class="svc-chip" [class.on]="isServiceSelected(s.id)" (click)="toggleService(s.id)">
+                  {{ s.name }} · {{ money(s.price) }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Estado</label>
+            <select class="select" formControlName="status">
+              @for (s of statuses; track s.value) { <option [value]="s.value">{{ s.label }}</option> }
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Notas <span class="muted">(opcional)</span></label>
+            <textarea class="textarea" formControlName="notes"></textarea>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-ghost" (click)="close()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Guardar cita' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (invoicing(); as inv) {
+  <div class="modal-backdrop" (click)="closeInvoice()">
+    <div class="modal invoice-modal" (click)="$event.stopPropagation()">
+      <div class="invoice print-area">
+        <div class="invoice-head">
+          <div>
+            <h2 class="invoice-biz">{{ business()?.name || 'Mi negocio' }}</h2>
+            <p class="muted">Comprobante de servicio</p>
+          </div>
+          <div class="invoice-meta right">
+            <strong>{{ invoiceNumber(inv) }}</strong>
+            <p class="muted">{{ fullDate(issuedAt) }}</p>
+          </div>
+        </div>
+
+        <div class="invoice-info">
+          <div>
+            <span class="muted">Cliente</span>
+            <strong>{{ inv.client_name || '—' }}</strong>
+          </div>
+          <div>
+            <span class="muted">Vehículo</span>
+            <strong>
+              @if (inv.vehicle_detail) { {{ inv.vehicle_detail.plate }} · {{ inv.vehicle_detail.brand }} {{ inv.vehicle_detail.model }} }
+              @else { — }
+            </strong>
+          </div>
+          <div>
+            <span class="muted">Atendido por</span>
+            <strong>{{ inv.employee_detail?.full_name || 'Sin asignar' }}</strong>
+          </div>
+          <div>
+            <span class="muted">Fecha de la cita</span>
+            <strong>{{ fullDate(inv.scheduled_at) }}</strong>
+          </div>
+        </div>
+
+        <table class="data invoice-table">
+          <thead>
+            <tr><th>Servicio</th><th class="right">Precio</th></tr>
+          </thead>
+          <tbody>
+            @for (s of inv.services_detail || []; track s.id) {
+              <tr><td>{{ s.name }}</td><td class="right mono">{{ money(s.price) }}</td></tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr><td class="right"><strong>Total</strong></td><td class="right mono"><strong>{{ money(inv.total_price) }}</strong></td></tr>
+          </tfoot>
+        </table>
+
+        @if (inv.notes) {
+          <p class="invoice-notes"><span class="muted">Notas:</span> {{ inv.notes }}</p>
+        }
+
+        <p class="invoice-foot muted">Gracias por su preferencia.</p>
+      </div>
+
+      <div class="modal-foot no-print">
+        <button type="button" class="btn btn-ghost" (click)="closeInvoice()">Cerrar</button>
+        <button type="button" class="btn btn-primary" (click)="printInvoice()">Imprimir</button>
+      </div>
+    </div>
+  </div>
+}

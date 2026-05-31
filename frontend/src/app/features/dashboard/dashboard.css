@@ -1,0 +1,62 @@
+:host { display: block; }
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 22px;
+}
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.kpi-label { font-size: 13px; color: var(--text-soft); font-weight: 600; }
+.kpi-value { font-family: var(--font-display); font-size: 32px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.kpi-foot { font-size: 12.5px; color: var(--text-faint); }
+
+.kpi.accent {
+  background: linear-gradient(150deg, var(--ink), var(--ink-soft));
+  border-color: transparent;
+  color: #eaf2f4;
+  position: relative;
+  overflow: hidden;
+}
+.kpi.accent::after {
+  content: ''; position: absolute; right: -40px; top: -40px;
+  width: 140px; height: 140px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(52,208,196,.35), transparent 70%);
+}
+.kpi.accent .kpi-label { color: #9fb6bf; }
+.kpi.accent .kpi-value { color: #fff; }
+.kpi.accent .kpi-foot { color: var(--aqua-glow); }
+
+.dash-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+.quick {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.quick:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--aqua); }
+.quick h4 { font-size: 14px; color: var(--text-soft); font-family: var(--font-body); font-weight: 600; }
+.quick span { display: block; font-family: var(--font-display); font-size: 28px; color: var(--ink); margin: 4px 0; }
+.quick small { color: var(--aqua-deep); font-weight: 700; font-size: 13px; }
+
+@media (max-width: 900px) {
+  .kpi-grid, .dash-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px) {
+  .kpi-grid, .dash-row { grid-template-columns: 1fr; }
+}

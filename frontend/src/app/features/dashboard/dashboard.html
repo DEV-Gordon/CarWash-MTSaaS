@@ -1,0 +1,59 @@
+<div class="page-head">
+  <div>
+    <h1>Dashboard</h1>
+    <p>Resumen de {{ business()?.name }} · {{ today }}</p>
+  </div>
+  <a routerLink="/appointments" class="btn btn-primary">+ Nueva cita</a>
+</div>
+
+@if (loading()) {
+  <div class="card card-pad loading">Cargando estadísticas…</div>
+} @else if (stats(); as s) {
+  <div class="kpi-grid">
+    <div class="kpi accent">
+      <span class="kpi-label">Ingresos del mes</span>
+      <strong class="kpi-value">{{ money(s.revenue_this_month) }}</strong>
+      <span class="kpi-foot">{{ s.appointments_done_this_month }} citas completadas</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">Citas hoy</span>
+      <strong class="kpi-value">{{ s.appointments_today }}</strong>
+      <span class="kpi-foot">programadas para hoy</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">Pendientes</span>
+      <strong class="kpi-value">{{ s.appointments_pending }}</strong>
+      <span class="kpi-foot">por atender / en proceso</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">Clientes</span>
+      <strong class="kpi-value">{{ s.total_clients }}</strong>
+      <span class="kpi-foot">{{ s.total_vehicles }} vehículos registrados</span>
+    </div>
+  </div>
+
+  <div class="dash-row">
+    <a routerLink="/clients" class="quick">
+      <h4>Clientes</h4>
+      <span>{{ s.total_clients }}</span>
+      <small>Gestionar →</small>
+    </a>
+    <a routerLink="/vehicles" class="quick">
+      <h4>Vehículos</h4>
+      <span>{{ s.total_vehicles }}</span>
+      <small>Gestionar →</small>
+    </a>
+    <a routerLink="/employees" class="quick">
+      <h4>Empleados</h4>
+      <span>{{ s.total_employees }}</span>
+      <small>Gestionar →</small>
+    </a>
+    <a routerLink="/services" class="quick">
+      <h4>Servicios</h4>
+      <span>—</span>
+      <small>Configurar →</small>
+    </a>
+  </div>
+} @else {
+  <div class="card card-pad empty">No se pudieron cargar las estadísticas.</div>
+}

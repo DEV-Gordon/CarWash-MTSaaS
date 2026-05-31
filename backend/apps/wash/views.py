@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from django.db.models import Sum, Q
+from apps.accounts.permissions import IsAdmin
 from .models import Client, Vehicle, Employee, WashService, Appointment
 from .serializers import (
     ClientSerializer, VehicleSerializer, EmployeeSerializer,
@@ -66,6 +67,7 @@ class VehicleDetailView(generics.RetrieveUpdateDestroyAPIView):
 # Employees views
 
 class EmployeeListCreateView(BusinessFilterMixin, generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
     filter_backends = [filters.SearchFilter]
@@ -73,6 +75,7 @@ class EmployeeListCreateView(BusinessFilterMixin, generics.ListCreateAPIView):
 
 
 class EmployeeDetailView(BusinessFilterMixin, generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
 
