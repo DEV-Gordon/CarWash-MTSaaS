@@ -18,4 +18,3 @@ env/
 # IDEs
 .vscode/
 .idea/
-backend/db.sqlite3
