@@ -207,6 +207,18 @@ DEBUG=True
 CORS_ALLOWED_ORIGINS=http://localhost:4200
 ```
 
+## DEMO USERS
+```
+Superadmin for admin panel in django:
+User: demosuperadmin
+Pwd: 1234
+
+Lavadero Demo
+User: DemoAdmin
+Pwd: Demo-test123
+
+```
+
 ## Suggested Next Steps
 - [x] Role-based access control (admin / employee) on API + UI
 - [x] Printable per-appointment invoices (browser print / Save as PDF)
