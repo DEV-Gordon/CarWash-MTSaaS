@@ -1,5 +1,17 @@
 :host { display: block; }
 
+/* ---------- Tabla de citas ----------
+   Tiene muchas columnas: se fija un ancho mínimo y el contenedor hace scroll
+   horizontal, en vez de comprimir las celdas (la fecha y las acciones se
+   partían en varias líneas y la tabla quedaba apretada). */
+.table-wrap table.data { min-width: 980px; }
+.table-wrap table.data thead th { white-space: nowrap; }
+.table-wrap table.data thead th,
+.table-wrap table.data tbody td { padding-left: 13px; padding-right: 13px; }
+.table-wrap table.data td.cell-date,
+.table-wrap table.data td.right { white-space: nowrap; }
+.cell-actions { flex-wrap: nowrap; align-items: center; gap: 6px; }
+
 .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
 .chip {
   background: var(--surface); border: 1px solid var(--line);
@@ -10,12 +22,19 @@
 .chip:hover { border-color: var(--aqua); color: var(--aqua-deep); }
 .chip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
 
+/* Select de estado con los colores del badge: una sola columna muestra el
+   estado y permite cambiarlo, sin duplicar la información en dos columnas. */
 .status-select {
   font-family: var(--font-body); font-size: 12.5px; font-weight: 600;
-  border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px;
+  border: 1px solid var(--line); border-radius: 999px; padding: 5px 10px;
   color: var(--text-soft); background: var(--surface); cursor: pointer;
+  white-space: nowrap;
 }
 .status-select:focus { outline: none; border-color: var(--aqua); }
+.status-select.st-pending     { background: #fdf1da; color: #a3690a; border-color: #f3e1bf; }
+.status-select.st-in_progress { background: #e3f1fb; color: #1d6fa5; border-color: #c9e2f5; }
+.status-select.st-done        { background: #e5f6ec; color: #1f7a3d; border-color: #bfe6cd; }
+.status-select.st-cancelled   { background: #fdeced; color: #c0392b; border-color: #f3c9ca; }
 
 .svc-picker { display: flex; flex-wrap: wrap; gap: 8px; }
 .svc-chip {

@@ -3,10 +3,16 @@ import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from './auth.service';
 
 // Bloquea rutas si el usuario no ha iniciado sesión.
+// Una sesión sin negocio asociado (ej. superadmin de Django) no es usable en la
+// app: se cierra y se redirige al login en lugar de dejar la UI en un estado roto.
 export const authGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
-  if (auth.isAuthenticated()) return true;
+  if (auth.isAuthenticated() && auth.business()) return true;
+  if (auth.isAuthenticated()) {
+    auth.logout();
+    return false;
+  }
   router.navigate(['/login']);
   return false;
 };

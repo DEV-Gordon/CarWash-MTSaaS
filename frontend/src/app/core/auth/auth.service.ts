@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -66,6 +66,14 @@ export class AuthService {
     return this.http
       .post<LoginResponse>(`${this.api}/auth/login/`, { username, password })
       .pipe(tap((res) => {
+        // Cuentas sin negocio (ej. superadmin de Django) no pueden usar la app:
+        // se rechaza la sesión para que el usuario permanezca en el login.
+        if (!res.business) {
+          throw new HttpErrorResponse({
+            status: 403,
+            error: { detail: 'Esta cuenta es de administración del sistema y no puede usar la aplicación.' },
+          });
+        }
         this.persistTokens(res.access, res.refresh);
         this.setUser(res.user);
         this.setBusiness(res.business);

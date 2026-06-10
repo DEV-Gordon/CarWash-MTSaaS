@@ -1,4 +1,4 @@
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.password_validation import validate_password
@@ -145,6 +145,15 @@ class CarWashTokenSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
         user = self.user
         business = user.business
+
+        # Los usuarios sin negocio (ej. superusuarios de Django) son cuentas del
+        # panel administrativo: la app no puede operar sin un negocio asociado.
+        if business is None:
+            raise exceptions.AuthenticationFailed(
+                'Esta cuenta es de administración del sistema. '
+                'Usa el panel de Django (/admin) para gestionarla.',
+                code='no_business',
+            )
 
         data['user'] = {
             'id': user.id,

@@ -21,10 +21,13 @@ export const routes: Routes = [
     component: Shell,
     canActivate: [authGuard],
     children: [
-      // La pantalla de suscripción solo requiere login (no suscripción activa), pero es solo para administradores.
+      // La pantalla de suscripción solo requiere login (no suscripción activa).
+      // Es visible para todo el equipo: si fuera solo-admin, un empleado con la
+      // suscripción vencida quedaría en un bucle de redirecciones
+      // (/dashboard → /subscription → /dashboard). El botón de renovar
+      // se muestra únicamente a administradores dentro del componente.
       {
         path: 'subscription',
-        canActivate: [adminGuard],
         loadComponent: () => import('./features/subscription/subscription').then((m) => m.SubscriptionPage),
       },
       // El resto exige suscripción activa

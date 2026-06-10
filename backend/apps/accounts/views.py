@@ -1,10 +1,11 @@
 from rest_framework import generics, status, permissions
+from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import BusinessUser, Business, Subscription
-from .permissions import IsAdmin
+from .permissions import IsAdmin, IsAdminOrReadOnly
 from .serializers import (
     RegisterBusinessSerializer, CarWashTokenSerializer,
     BusinessSerializer, SubscriptionSerializer, BusinessUserSerializer,
@@ -60,11 +61,17 @@ class MeView(APIView):
 
 class SubscriptionDetailView(generics.RetrieveUpdateAPIView):
     # Get or update the subscription for the authenticated business.
+    # Lectura para todo el equipo (los empleados necesitan ver el estado del
+    # plan, p. ej. cuando vence); escritura solo para administradores.
     serializer_class = SubscriptionSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAdmin]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_object(self):
-        return self.request.user.business.subscription
+        business = self.request.user.business
+        sub = getattr(business, 'subscription', None) if business else None
+        if sub is None:
+            raise NotFound('Este usuario no tiene una suscripción asociada.')
+        return sub
 
 class RenewSubscriptionView(APIView):
     # Manually renew/activate the subscription for one month.
@@ -75,7 +82,9 @@ class RenewSubscriptionView(APIView):
         if not user.is_admin:
             return Response({'detail': 'Solo administradores pueden renovar la suscripción.'},
                             status=status.HTTP_403_FORBIDDEN)
-        sub = user.business.subscription
+        sub = getattr(user.business, 'subscription', None) if user.business else None
+        if sub is None:
+            raise NotFound('Este usuario no tiene una suscripción asociada.')
         sub.renew(months=1)
         return Response({
             'message': 'Suscripción renovada correctamente.',
@@ -88,7 +97,10 @@ class BusinessDetailView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        return self.request.user.business
+        business = self.request.user.business
+        if business is None:
+            raise NotFound('Este usuario no tiene un negocio asociado.')
+        return business
 
 
 class UserListView(generics.ListCreateAPIView):
